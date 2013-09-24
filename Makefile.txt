@@ -1,0 +1,22 @@
+/****** proj2make ******/
+ 
+CXX     = g++
+ 
+.cc.o:
+        $(CXX) -c $< -o $*.o
+ 
+default: all
+ 
+all: tubular
+ 
+tubular.tab.cc: tubular.y
+        bison -otubular.tab.cc -b tubular -d tubular.y
+ 
+tubular.yy.cc: tubular.lex
+        flex -otubular.yy.cc tubular.lex
+ 
+tubular: tubular.tab.o tubular.yy.o
+        $(CXX) -o tubular tubular.tab.o tubular.yy.o -ll -ly
+ 
+clean:
+        rm -f tubular.tab.cc tubular.tab.hh tubular.yy.cc tubular.tab.o tubular.yy.o tubular
