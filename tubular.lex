@@ -1,7 +1,3 @@
-/****** tubular.lex ******/
-
-//THIS IS AN EDIT
- 
 %{
 #include <iostream>
 #include <fstream>
