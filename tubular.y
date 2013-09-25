@@ -1,17 +1,85 @@
-~                                                                                                                                                                                             
-~                                                                                                                                                                                             
-~                                                                                                                                                                                             
-~                                                                                                                                                                                             
-~                                                                                                                                                                                             
-~                                                                                                                                                                                             
-~                                                                                                                                                                                             
-~                                                                                                                                                                                             
-~                                                                                                                                                                                             
-~                                                                                                                                                                                             
-~                                                                                                                                                                                             
-~                                                                                                                                                                                             
-~                                                                                                                                                                                             
-"tubular.lex" 24L, 402C written                                                                                                                                             
+%{
+#include <iostream>
+#include <map>
+#include <string>
+using namespace std;
+void yyerror(char * err_string)
+  { cerr << "Input match failed!" << endl; }
+extern int yylex();
+
+map<string, int> id_map;
+%}
+
+%union {
+  char * lexeme;
+  int number;
+}
+
+%left '+' '-'
+%left '*' '/'
+
+%token <lexeme> ID
+%token <number> NUMBER
+%token ENDLINE TYPE_NUM
+%token CASSIGN_ADD, CASSIGN_SUB, CASSIGN_MUL, CASSIGN_DIV, CASSIGN_MOD
+
+
+
+%type <number> expr
+
+%%
+
+program:   program statement
+           | { cout << "Start!" << endl; }
+
+statement: expr ENDLINE { cout << "Line Result = " << $1 << endl; }
+           | TYPE_NUM ID ENDLINE {
+                if (id_map.find($2) != id_map.end()) {
+                   cout << "ERROR: variable '" << $2 << "' already defined." << endl;
+                   exit(1);
+                }
+                id_map[$2]=0; }
+                | TYPE_NUM ID '=' expr ENDLINE {
+                if (id_map.find($2) != id_map.end()) {
+                   cout << "ERROR: variable '" << $2 << "' already defined." << endl;
+                   exit(1);
+                }
+                 id_map[$2]=$4; }
+           | ID '=' expr ENDLINE {
+                if (id_map.find($1) == id_map.end()) {
+                   cout << "ERROR: variable '" << $1 << "' not defined." << endl;
+                   exit(1);
+                }
+                id_map[$1] = $3; }
+
+
+expr:      expr '+' expr { $$ = $1 + $3; }
+           | expr '-' expr { $$ = $1 - $3; }
+           | expr '*' expr { $$ = $1 * $3; }
+           | expr '/' expr { $$ = $1 / $3; }
+           | expr '%' expr { $$ = $1 % $3; }
+           | '(' expr ')' { $$ = $2; }
+           | '-' expr { $$ = -$2; }
+           | ID CASSIGN_ADD expr { $$ = id_map[$1] + $3; id_map[$1] = $$;}
+           | ID CASSIGN_SUB expr { $$ = id_map[$1] - $3; id_map[$1] = $$;}
+           | ID CASSIGN_MUL expr { $$ = id_map[$1] * $3; id_map[$1] = $$;}
+           | ID CASSIGN_DIV expr { $$ = id_map[$1] / $3; id_map[$1] = $$;}
+           | ID CASSIGN_MOD expr { $$ = id_map[$1] % $3; id_map[$1] = $$;}
+           | ID {
+                if (id_map.find($1) == id_map.end()) {
+                   cout << "ERROR: variable '" << $1 << "' not defined." << endl;
+                   exit(1);
+                }
+
+                $$ = id_map[$1]; }
+           | NUMBER     { $$ = $1; };
+
+
+%%
+
+main() { yyparse(); }
+                                                                                                                                    1,1           Top
+                                                                                                                                            
 
 
 
